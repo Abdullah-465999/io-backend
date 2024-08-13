@@ -11,13 +11,15 @@ const transWalletInfo = require('./routes/transWalletInforoute');
 const sellAndBuy = require('./routes/BuyAndSellRoute');
 const butterfactoryinfoRoute = require('./routes/butterfactoryinfoRoute');
 const SuperTrend = require('./routes/SuperTrend');
+const _ = require('lodash');
+
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://45.55.97.152:5300',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST']
   }
 });
@@ -45,7 +47,7 @@ sql.connect(config).then(pool => {
 
 app.use(cors({
   credentials: true,
-  origin: 'http://45.55.97.152:5300'
+  origin: 'http://localhost:3000'
 }));
 
 app.use(express.json());
@@ -62,7 +64,89 @@ app.use('/supertrend', SuperTrend);
 
 
 
-// Socket.IO connection
+// let previousChannelNames = [];
+// let previousAllUsers = [];
+// let previousTransInfos = [];
+// let previousTransWalletInfo = [];
+// let previousButterFactoryInfo = [];
+// let previousSuperTrendCandleData = [];
+// let previousBuyAndSell = [];
+
+// io.on('connection', (socket) => {
+//   console.log('client connected');
+
+//   const checkAndEmit = async () => {
+//     try {
+//       const [channelName, allUsers, transInfos, transWalletInfo, butterFactoryInfo, superTrendCandleData] = await Promise.all([
+//         sql.query`SELECT * FROM ChannelNames`,
+//         sql.query`SELECT * FROM Users`,
+//         sql.query`SELECT * FROM TransInfo`,
+//         sql.query`SELECT * FROM TransWalletInfo`,
+//         sql.query`SELECT * FROM BuyingInfo ORDER BY createddate DESC`,
+//         sql.query`SELECT * FROM SuperTrendCandleData`
+//       ]);
+
+//       // Check and emit if data has changed
+//       if (!_.isEqual(channelName.recordset, previousChannelNames)) {
+//         socket.emit('channelNamesUpdated', channelName.recordset);
+//         previousChannelNames = channelName.recordset;
+//       }
+
+//       if (!_.isEqual(allUsers.recordset, previousAllUsers)) {
+//         socket.emit('allUsers', allUsers.recordset);
+//         previousAllUsers = allUsers.recordset;
+//       }
+
+//       if (!_.isEqual(transInfos.recordset, previousTransInfos)) {
+//         console.log('transinfos: !equal');
+
+//         socket.emit('TransInfos', transInfos.recordset);
+//         previousTransInfos = transInfos.recordset;
+//       }
+
+//       if (!_.isEqual(transWalletInfo.recordset, previousTransWalletInfo)) {
+//         socket.emit('transwalletinfo', transWalletInfo.recordset);
+//         previousTransWalletInfo = transWalletInfo.recordset;
+//       }
+
+//       if (!_.isEqual(butterFactoryInfo.recordset, previousButterFactoryInfo)) {
+//         socket.emit('butterfactoryinfo', butterFactoryInfo.recordset);
+//         previousButterFactoryInfo = butterFactoryInfo.recordset;
+//       }
+
+//       if (!_.isEqual(superTrendCandleData.recordset, previousSuperTrendCandleData)) {
+//         socket.emit('SuperTrendCandleData', superTrendCandleData.recordset);
+//         previousSuperTrendCandleData = superTrendCandleData.recordset;
+//       }
+//     } catch (error) {
+//       console.error('Error fetching data:', error);
+//     }
+//   };
+
+//   const checkAndEmitBuyAndSell = async () => {
+//     try {
+//       const buyAndSell = await sql.query`SELECT * FROM TokenSellSlots`;
+      
+//       if (!_.isEqual(buyAndSell.recordset, previousBuyAndSell)) {
+//         console.log('buyandsell: !equal');
+//         socket.emit('buyandsell', buyAndSell.recordset);
+//         previousBuyAndSell = buyAndSell.recordset;
+//       }
+//     } catch (error) {
+//       console.error('Error fetching buy and sell data:', error);
+//     }
+//   };
+
+
+//   // Periodic data checks
+//   setInterval(checkAndEmit, 5000);
+//   setInterval(checkAndEmitBuyAndSell, 1000);
+
+//   socket.on('disconnect', () => {
+//     console.log('Client disconnected');
+//   });
+// });
+
 io.on('connection', (socket) => {
   console.log('client connected');
   setInterval(async () => {
@@ -91,8 +175,6 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
   });
 });
-
-
 
 
 
